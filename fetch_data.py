@@ -15,9 +15,9 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client import tools
 
-queryString = 'SELECT pickup_datetime, dropoff_datetime FROM [833682135931:nyctaxi.trip_data] LIMIT 10;'
+queryStr = 'SELECT pickup_datetime, dropoff_datetime FROM [833682135931:nyctaxi.trip_data] LIMIT 10;'
 
-def fetch_data(queryStr=queryString):
+def fetch_data(queryString=queryStr):
 
   # Enter your Google Developer Project number
   PROJECT_NUMBER = '921050816021'
@@ -46,16 +46,13 @@ def fetch_data(queryStr=queryString):
   query_response = query_request.query(projectId=PROJECT_NUMBER,
                                    body=query_data).execute()
   # Output results
-  f = open("output.txt", "w")
-  f.write('Query Results:\n')
+  result_array = []
   for row in query_response['rows']:
       result_row = []
       for field in row['f']:
           result_row.append(field['v'])
-      f.write(('\t').join(result_row))
-      f.write('\n')
-  f.close()
-  return None
+      result_array.append(result_row)
+  return result_array
 
 #fetch_data()
 
