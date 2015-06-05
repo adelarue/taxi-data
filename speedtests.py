@@ -7,6 +7,7 @@ import travel_time
 import numpy as np
 from scipy.spatial import cKDTree
 from conversions import Ellipsoid
+import subprocess
 
 list1 = range(100000)
 list2 = range(50000,150000)
@@ -40,4 +41,4 @@ def access2(ellipsoid):
 
 #cProfile.run('AccessTest()')
 
-cProfile.run("travel_time.write_travel_times('output2.csv')")
+# cProfile.run("travel_time.write_travel_times('output2.csv')")

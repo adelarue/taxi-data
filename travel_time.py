@@ -3,12 +3,14 @@
 # Assumes taxi data has been preprocessed by get_manhattan_rides()
 # Created 6/1/15 by Arthur J Delarue
 
-from scipy.spatial import cKDTree
+from scipy.spatial import cKDTree, KDTree
 import math
 import numpy as np
 from conversions import LL0_to_ENUm
 import sys
 from stats import avg, stddev, stderr
+import subprocess
+import pickle
 
 def point_within_radius(point, center, radius): # deprecated
 	x,y = point
@@ -134,14 +136,37 @@ def get_rides_fast():
 def write_travel_times(fileName="output.csv"):
 	outputFile = open(fileName, "w")
 	result = get_rides_fastest()
-	for key in result.keys():
+	print "**** Writing results to file ****"
+	length = len(result.keys())
+	for i, key in enumerate(result.keys()):
 		outputFile.write(str(key[0]) + ";" + str(key[1]) + ",")
 		outputFile.write("%.02f" % avg(result[key]) + "," + "%.02f" % stddev(result[key]) + "," + "%.02f" % stderr(result[key]) + "," + str(len(result[key])))
 		# outputFile.write(",")
 		# outputFile.write(",".join([str(element) for element in result[key]]))
 		outputFile.write("\n")
+		if i % 400000 == 0:
+			progress = 100.0*i/length
+			if progress > 105:
+				break
+			if i > 0:
+				sys.stdout.write('\r')
+			sys.stdout.write("Progress: " + "%.01f" % progress + "%" + " completed.")
+			sys.stdout.flush()
+	sys.stdout.write("\rProgress: " + "%.01f" % 100.0 + "%" + " completed.\n")
+	sys.stdout.flush()
 	outputFile.close()
 	return None
+
+def store_travel_times(rideFileName, dictionaryFileName):
+	dictFile = open(dictionaryFileName, "w")
+	nodePairs = get_rides_fastest(fileName=rideFileName, scipy_old=True)
+	dictFile.dump(nodePairs, dictFile)
+	dictFile.close()
+	return None
+
+def count_lines(fileName):
+	output = subprocess.Popen(["wc", "-l", fileName], stdout=subprocess.PIPE).communicate()[0]
+	return int(output.strip().split(" ")[0])
 
 def find_all_times_faster(pickups, dropoffs, time_list, nodes, radius=0):
 	'''
@@ -180,13 +205,12 @@ def find_all_times_faster(pickups, dropoffs, time_list, nodes, radius=0):
 	sys.stdout.flush()
 	return nodePairs
 
-def get_rides_fastest():
+def get_rides_fastest(fileName="manhattan_rides_2.csv", nodeFileName="nodesENU.csv", scipy_old=False, R=100.0):
 	'''
 	Extracts rides and nodes from appropriate files
 	'''
 	MIN_RIDES = 4
-	R = 100.0
-	nodeFile = open("nodesENU.csv", "r")
+	nodeFile = open(nodeFileName, "r")
 	print "**** Reading node file ****"
 	nodes = []
 	for i, line in enumerate(nodeFile):
@@ -195,10 +219,13 @@ def get_rides_fastest():
 		node = line.replace('"', '').split(",")
 		nodes.append([float(node[0]), float(node[1])])
 	nodeFile.close()
-	nTree = cKDTree(nodes)
+	if scipy_old:
+		nTree = KDTree(nodes)
+	else:
+		nTree = cKDTree(np.array(nodes))
 	# Open input file with rides
-	fileName = "manhattan_rides_2.csv"
 	rideFile = open(fileName, "r")
+	rideFileLength = count_lines(fileName)
 	print "**** Reading ride file ****"
 	tmpNodePairs = {}
 	nodePairs = {}
@@ -215,10 +242,10 @@ def get_rides_fastest():
 					nodePairs[(pickup,dropoff)].append(float(row[0]))
 				elif (pickup, dropoff) in tmpkeys:
 					if len(tmpNodePairs[(pickup, dropoff)]) >= MIN_RIDES - 1:
-						tmpkeys.remove((pickup,dropoff))
 						keys.add((pickup, dropoff))
 						nodePairs[(pickup, dropoff)] = tmpNodePairs[(pickup, dropoff)]
 						nodePairs[(pickup, dropoff)].append(float(row[0]))
+						tmpkeys.remove((pickup,dropoff))
 						del tmpNodePairs[(pickup, dropoff)]
 					else:
 						tmpNodePairs[(pickup, dropoff)].append(float(row[0]))
@@ -226,18 +253,20 @@ def get_rides_fastest():
 					tmpkeys.add((pickup, dropoff))
 					tmpNodePairs[(pickup, dropoff)] = [float(row[0])]
 		# Progress bar code
-		if fileName == "manhattan_rides_2.csv":
-			if i % 1000 == 0:
-				progress = 100.0*i/1000000#9072075
-				if progress > 100:
+		if True:
+			if i % (rideFileLength/150) == 0:
+				progress = 100.0*i/rideFileLength
+				if progress > 105:
 					break
 				if i > 0:
 					sys.stdout.write('\r')
-				sys.stdout.write("Progress: " + "%.02f" % progress + "%" + " completed.")
+				sys.stdout.write("Progress: " + "%.01f" % progress + "%" + " completed.")
 				sys.stdout.flush()
-	sys.stdout.write('\n')
+	sys.stdout.write("\rProgress: " + "%.01f" % 100.0 + "%" + " completed.\n")
+	sys.stdout.flush()
 	rideFile.close()
 	return nodePairs
 
 if __name__ == "__main__":
+	# count_lines("speedtests.py")
 	write_travel_times()
