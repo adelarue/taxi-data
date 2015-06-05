@@ -6,12 +6,18 @@
 from datetime import datetime
 from datetime import time
 from datetime import timedelta
+from holidays import UnitedStates
 from point_in_poly import point_in_poly
-import os
+import sys
 
 # Select time interval
 INTERVAL_START = time(12, 0, 0)
 INTERVAL_END = time(14, 0, 0)
+WORKDAYS = True
+WEEKEND = set([5,6])
+
+# define holidays
+us_holidays = UnitedStates()
 
 def import_manhattan_polygon():
 	# Import manhattan_polygon from file and format it into a list of vertices
@@ -35,7 +41,11 @@ def get_manhattan_rides():
 	# Open output file
 	outputFile = open("manhattan_rides_2.csv", "w")
 	# Loop through input files
-	for i in range(12, 13):
+	for i in range(1, 13):
+		if i > 0:
+			sys.stdout.write('\r')
+		sys.stdout.write(str(i))
+		sys.stdout.flush()
 		# This boolean is to make sure the first line is skipped
 		firstLine = True
 		# Open input file
@@ -60,11 +70,16 @@ def get_manhattan_rides():
 				dropoff_in_manhattan = point_in_poly(float(dropoff_latitude), float(dropoff_longitude), manhattan_polygon)
 			except ValueError:
 				continue
+			# Make sure the date is a workday
+			if WORKDAYS and (pickup_time.date() in us_holidays or dropoff_time.date() in us_holidays or pickup_time.date().weekday() in WEEKEND or dropoff_time.date().weekday() in WEEKEND):
+				continue
 			# Check if taxi ride is in Manhattan, in the appropriate time interval
 			if INTERVAL_START <= pickup_time.time() and pickup_time.time() < INTERVAL_END and INTERVAL_START <= dropoff_time.time() and dropoff_time.time() < INTERVAL_END and pickup_in_manhattan and dropoff_in_manhattan:
 				travel_time = dropoff_time - pickup_time
 				# Write travel time and coordinates to file
 				outputFile.write(str(travel_time.total_seconds()) + ",")
+				# outputFile.write(",".join(row[5:7]))
+				# outputFile.write(",")
 				outputFile.write(",".join(row[10:14]))
 		inputFile.close()
 	outputFile.close()
@@ -123,6 +138,6 @@ def sort_nodes(fileName):
 	return None
 
 if __name__ == "__main__":
-	sort_nodes("nodesENU.csv")
+	# sort_nodes("nodesENU.csv")
 	# extract_sample(ues_sample,ev_sample)
-	# get_manhattan_rides()
+	get_manhattan_rides()

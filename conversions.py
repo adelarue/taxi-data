@@ -50,8 +50,8 @@ def LL0_to_ECEF(ll_coords, ellipsoid=WGS84):
 	cos_lambda = math.cos(math.radians(lambda_deg))
 
 	# Extract ellipsoid parameters
-	a = ellipsoid.getSemiMajorAxis()
-	e = ellipsoid.getEccentricity()
+	a = ellipsoid.a
+	e = ellipsoid.e
 	N = a / math.sqrt(1 - e ** 2 * sin_psi ** 2)	# Radius of curvature (meters)
 
 	# Do the calculation
@@ -61,7 +61,7 @@ def LL0_to_ECEF(ll_coords, ellipsoid=WGS84):
 
 	return (x, y, z)
 
-def ECEF_to_ENU(ecef_coords, ll_center_coords, ellipsoid=WGS84):
+def ECEF_to_ENU(ecef_coords, ll_center_coords, ecef_center_coords):
 	'''
 	Coordinates of point must be passed as ECEF, but coordinates of reference must be passed
 	as (latitude, longitude)
@@ -74,7 +74,7 @@ def ECEF_to_ENU(ecef_coords, ll_center_coords, ellipsoid=WGS84):
 	sin_lambda = math.sin(math.radians(lambda_deg))
 	cos_lambda = math.cos(math.radians(lambda_deg))
 	
-	ecef_center = LL0_to_ECEF(ll_center_coords, ellipsoid)
+	ecef_center = ecef_center_coords
 
 	dx = ecef_coords[0] - ecef_center[0]
 	dy = ecef_coords[1] - ecef_center[1]
@@ -87,14 +87,15 @@ def ECEF_to_ENU(ecef_coords, ll_center_coords, ellipsoid=WGS84):
 
 	return (east, north)
 
-def LL0_to_ENUm(ll_coords, ll_center_coords=MANHATTAN_CENTER, ellipsoid=WGS84):
+def LL0_to_ENUm(ll_coords, ll_center_coords=MANHATTAN_CENTER, ecef_center_coords=LL0_to_ECEF(MANHATTAN_CENTER), ellipsoid=WGS84):
 	'''
 	Shortcut for the Manhattan problem. Easier to import and run in travel_time.py
 	'''
-	return ECEF_to_ENU(LL0_to_ECEF(ll_coords, ellipsoid), ll_center_coords, ellipsoid)
+	return ECEF_to_ENU(LL0_to_ECEF(ll_coords, ellipsoid), ll_center_coords, ecef_center_coords)
 	
 if __name__ == "__main__":
-	pass
+	# print LL0_to_ENUm(MANHATTAN_CENTER)
+	# print LL0_to_ENUm((40.3234, -74.0101))
 
 
 
