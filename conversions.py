@@ -94,6 +94,7 @@ def LL0_to_ENUm(ll_coords, ll_center_coords=MANHATTAN_CENTER, ecef_center_coords
 	return ECEF_to_ENU(LL0_to_ECEF(ll_coords, ellipsoid), ll_center_coords, ecef_center_coords)
 	
 if __name__ == "__main__":
+	pass
 	# print LL0_to_ENUm(MANHATTAN_CENTER)
 	# print LL0_to_ENUm((40.3234, -74.0101))
 

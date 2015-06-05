@@ -197,7 +197,7 @@ def get_rides_fastest():
 	nodeFile.close()
 	nTree = cKDTree(nodes)
 	# Open input file with rides
-	fileName = "manhattan_rides.csv"
+	fileName = "manhattan_rides_2.csv"
 	rideFile = open(fileName, "r")
 	print "**** Reading ride file ****"
 	tmpNodePairs = {}
@@ -218,6 +218,7 @@ def get_rides_fastest():
 						tmpkeys.remove((pickup,dropoff))
 						keys.add((pickup, dropoff))
 						nodePairs[(pickup, dropoff)] = tmpNodePairs[(pickup, dropoff)]
+						nodePairs[(pickup, dropoff)].append(float(row[0]))
 						del tmpNodePairs[(pickup, dropoff)]
 					else:
 						tmpNodePairs[(pickup, dropoff)].append(float(row[0]))
@@ -225,9 +226,9 @@ def get_rides_fastest():
 					tmpkeys.add((pickup, dropoff))
 					tmpNodePairs[(pickup, dropoff)] = [float(row[0])]
 		# Progress bar code
-		if fileName == "manhattan_rides.csv":
+		if fileName == "manhattan_rides_2.csv":
 			if i % 1000 == 0:
-				progress = 100.0*i/200000#9072075
+				progress = 100.0*i/1000000#9072075
 				if progress > 100:
 					break
 				if i > 0:
