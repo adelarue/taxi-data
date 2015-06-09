@@ -4,3 +4,5 @@
 *.dat
 *.txt
 *.json
+*.ipynb*
+*.jld
