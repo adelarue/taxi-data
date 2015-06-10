@@ -4,17 +4,31 @@
 
 # Load city graph
 println("**** Loading city graph ****")
+fromScratch = false
 useShortestPaths = true
-# manhattan = SquareCity(3)
-manhattan = Manhattan(sp=useShortestPaths)
-roads = edges(manhattan.network)
-nodes = vertices(manhattan.network)
-graph = manhattan.network
-times = manhattan.roadTime
-if useShortestPaths
-	sp = manhattan.sp
+if fromScratch
+	# manhattan = SquareCity(3)
+	manhattan = Manhattan(sp=useShortestPaths)
+	roads = edges(manhattan.network)
+	nodes = vertices(manhattan.network)
+	graph = manhattan.network
+	times = manhattan.roadTime
+	if useShortestPaths
+		sp = manhattan.sp
+	end
+	out = [copy(out_neighbors(graph,i)) for i in nodes]
+	saveTaxiPb(manhattan, "full_manhattan")
+else
+	manhattan = loadTaxiPb("full_manhattan")
+	roads = edges(manhattan.network)
+	nodes = vertices(manhattan.network)
+	graph = manhattan.network
+	times = manhattan.roadTime
+	if useShortestPaths
+		sp = manhattan.sp
+	end
+	out = [copy(out_neighbors(graph,i)) for i in nodes]
 end
-out = [copy(out_neighbors(graph,i)) for i in nodes]
 
 # Load travel time data
 println("**** Loading travel times ****")
