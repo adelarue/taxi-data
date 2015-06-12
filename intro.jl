@@ -3,9 +3,10 @@
 # Authored by Arthur J Delarue on 6/9/15
 
 
-using HDF5, JLD, LightGraphs
-using JuMP, Gurobi
-using MathProgBase
-include("LP_tools.jl")
-include("../taxi-simulation/definitions.jl")
-include("../taxi-simulation/Cities/manhattan.jl")
+@everywhere using HDF5, JLD, LightGraphs
+@everywhere using JuMP, Gurobi
+@everywhere using MathProgBase
+@everywhere include("../taxi-simulation/definitions.jl")
+@everywhere include("../taxi-simulation/Cities/manhattan.jl")
+@everywhere include("../taxi-simulation/Cities/squareCity.jl")
+@everywhere include("LP_tools.jl")
