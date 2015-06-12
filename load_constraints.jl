@@ -4,10 +4,9 @@
 
 # Load city graph
 println("**** Loading city graph ****")
-fromScratch = false
-useShortestPaths = true
+fromScratch = true
+useShortestPaths = false
 if fromScratch
-	# manhattan = SquareCity(3)
 	manhattan = Manhattan(sp=useShortestPaths)
 	roads = edges(manhattan.network)
 	nodes = vertices(manhattan.network)
@@ -15,7 +14,9 @@ if fromScratch
 	times = manhattan.roadTime
 	if useShortestPaths
 		sp = manhattan.sp
-	end
+	else
+		sp = parallelShortestPathsAuto(manhattan.network, times, float(times))
+	end	
 	out = [copy(out_neighbors(graph,i)) for i in nodes]
 	saveTaxiPb(manhattan, "full_manhattan")
 else

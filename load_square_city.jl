@@ -25,22 +25,29 @@ if false
 end
 if false
 	tmp_city = SquareCity(2)
-	city = SquareCity(50)
+	city = SquareCity(70)
 	graph = city.network
 end
+
 #roads = edges(graph)
 #nodes = vertices(graph)
 #out = [copy(out_neighbors(graph,i)) for i in nodes]
-parallelShortestPaths(tmp_city.network, tmp_city.roadTime, tmp_city.roadCost)
 
-@everywhere include("LP_tools.jl")
+parallelShortestPaths(tmp_city.network, tmp_city.roadTime, tmp_city.roadCost)
+parallelShortestPathsAuto(tmp_city.network, tmp_city.roadTime, tmp_city.roadCost)
 
 #println("**** Running tests ****")
 
 #a=shortestPaths(graph, city.roadTime, city.roadCost)
 
-Profile.clear()
+#Profile.clear()
 
-@profile b=parallelShortestPaths(graph, city.roadTime, city.roadCost)
+println("manual")
+
+@time b=parallelShortestPaths(graph, city.roadTime, city.roadCost)
+
+println("*** auto ***")
+
+@time f=parallelShortestPathsAuto(graph, city.roadTime, city.roadCost, 100)
 
 println("")
